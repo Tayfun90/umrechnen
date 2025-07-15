@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -52,9 +53,11 @@
       info.innerText = "Wechselkurs wird geladen...";
 
       try {
-        const res = await fetch("https://api.exchangerate.host/latest?base=EUR&symbols=TRY");
+        const res = await fetch("https://open.er-api.com/v6/latest/EUR");
         const data = await res.json();
-        const kurs = data.rates.TRY;
+        const kurs = data.rates["TRY"];
+
+        if (!kurs) throw new Error("TRY-Kurs nicht gefunden");
 
         if (!isNaN(euroBetrag)) {
           const tlErg = euroBetrag * kurs;
@@ -66,7 +69,7 @@
           ergebnis.innerText = "Bitte einen Betrag eingeben.";
         }
 
-        info.innerText = "Kurs: 1 € = " + kurs.toFixed(4) + " TL (Quelle: exchangerate.host)";
+        info.innerText = "Kurs: 1 € = " + kurs.toFixed(4) + " TL (Quelle: open.er-api.com)";
       } catch (err) {
         ergebnis.innerText = "❌ Fehler beim Laden des Wechselkurses.";
         info.innerText = "";
