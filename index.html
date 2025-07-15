@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -67,9 +66,9 @@
           ergebnis.innerText = "Bitte einen Betrag eingeben.";
         }
 
-        info.innerText = "Kurs: 1 € = " + kurs.toFixed(4) + " TL (exchangerate.host)";
+        info.innerText = "Kurs: 1 € = " + kurs.toFixed(4) + " TL (Quelle: exchangerate.host)";
       } catch (err) {
-        ergebnis.innerText = "Fehler beim Laden des Wechselkurses.";
+        ergebnis.innerText = "❌ Fehler beim Laden des Wechselkurses.";
         info.innerText = "";
       }
     }
