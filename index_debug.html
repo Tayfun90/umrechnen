@@ -1,0 +1,109 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Euro ↔ TL Rechner (Debug)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 400px;
+      margin: 50px auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    input, button {
+      padding: 10px;
+      margin: 8px 0;
+      width: 100%;
+      font-size: 1em;
+    }
+    button {
+      cursor: pointer;
+    }
+    #debug {
+      margin-top: 20px;
+      font-size: 0.85em;
+      background: #f9f9f9;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px dashed #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h2>Euro ↔ Türkische Lira (TL) Umrechner (Debug)</h2>
+
+  <label for="euro">Euro (€):</label>
+  <input type="number" id="euro" placeholder="z. B. 50" oninput="clearOther('tl')">
+
+  <label for="tl">Türkische Lira (TL):</label>
+  <input type="number" id="tl" placeholder="z. B. 1750" oninput="clearOther('euro')">
+
+  <button onclick="umrechnen()">Umrechnen</button>
+
+  <h3>Ergebnis:</h3>
+  <p id="ergebnis">–</p>
+  <p id="info"></p>
+
+  <div id="debug">Debug-Log: <br><pre id="log"></pre></div>
+
+  <script>
+    async function umrechnen() {
+      const euroInput = document.getElementById('euro');
+      const tlInput = document.getElementById('tl');
+      const ergebnis = document.getElementById('ergebnis');
+      const info = document.getElementById('info');
+      const log = document.getElementById('log');
+
+      const euroBetrag = parseFloat(euroInput.value);
+      const tlBetrag = parseFloat(tlInput.value);
+
+      info.innerText = "Wechselkurs wird geladen...";
+      log.innerText = "Starte API-Abfrage...";
+
+      try {
+        const url = "https://api.exchangerate.host/latest?base=EUR&symbols=TRY";
+        log.innerText += "\nFetching URL: " + url;
+        const res = await fetch(url);
+        log.innerText += "\nStatus: " + res.status;
+
+        if (!res.ok) throw new Error("HTTP-Status " + res.status);
+
+        const data = await res.json();
+        log.innerText += "\nAntwort: " + JSON.stringify(data, null, 2);
+        const kurs = data.rates.TRY;
+
+        if (!isNaN(euroBetrag)) {
+          const tlErg = euroBetrag * kurs;
+          ergebnis.innerText = euroBetrag + " € = " + tlErg.toFixed(2) + " TL";
+        } else if (!isNaN(tlBetrag)) {
+          const euroErg = tlBetrag / kurs;
+          ergebnis.innerText = tlBetrag + " TL = " + euroErg.toFixed(2) + " €";
+        } else {
+          ergebnis.innerText = "Bitte einen Betrag eingeben.";
+        }
+
+        info.innerText = "Kurs: 1 € = " + kurs.toFixed(4) + " TL (Quelle: exchangerate.host)";
+      } catch (err) {
+        ergebnis.innerText = "❌ Fehler beim Laden des Wechselkurses.";
+        info.innerText = "";
+        log.innerText += "\nFehler: " + err.message;
+      }
+    }
+
+    function clearOther(field) {
+      if (field === 'tl') {
+        document.getElementById('tl').value = '';
+      } else {
+        document.getElementById('euro').value = '';
+      }
+      document.getElementById('ergebnis').innerText = "–";
+      document.getElementById('info').innerText = "";
+      document.getElementById('log').innerText = "";
+    }
+  </script>
+</body>
+</html>
