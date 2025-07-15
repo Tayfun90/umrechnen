@@ -1,0 +1,90 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Euro ↔ TL Rechner</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 400px;
+      margin: 50px auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    input, button {
+      padding: 10px;
+      margin: 8px 0;
+      width: 100%;
+      font-size: 1em;
+    }
+    button {
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h2>Euro ↔ Türkische Lira (TL) Umrechner</h2>
+
+  <label for="euro">Euro (€):</label>
+  <input type="number" id="euro" placeholder="z. B. 50" oninput="clearOther('tl')">
+
+  <label for="tl">Türkische Lira (TL):</label>
+  <input type="number" id="tl" placeholder="z. B. 1750" oninput="clearOther('euro')">
+
+  <button onclick="umrechnen()">Umrechnen</button>
+
+  <h3>Ergebnis:</h3>
+  <p id="ergebnis">–</p>
+  <p id="info"></p>
+
+  <script>
+    async function umrechnen() {
+      const euroInput = document.getElementById('euro');
+      const tlInput = document.getElementById('tl');
+      const ergebnis = document.getElementById('ergebnis');
+      const info = document.getElementById('info');
+
+      const euroBetrag = parseFloat(euroInput.value);
+      const tlBetrag = parseFloat(tlInput.value);
+
+      info.innerText = "Wechselkurs wird geladen...";
+
+      try {
+        const res = await fetch("https://open.er-api.com/v6/latest/EUR");
+        const data = await res.json();
+        const kurs = data.rates["TRY"];
+
+        if (!kurs) throw new Error("TRY-Kurs nicht gefunden");
+
+        if (!isNaN(euroBetrag)) {
+          const tlErg = euroBetrag * kurs;
+          ergebnis.innerText = euroBetrag + " € = " + tlErg.toFixed(2) + " TL";
+        } else if (!isNaN(tlBetrag)) {
+          const euroErg = tlBetrag / kurs;
+          ergebnis.innerText = tlBetrag + " TL = " + euroErg.toFixed(2) + " €";
+        } else {
+          ergebnis.innerText = "Bitte einen Betrag eingeben.";
+        }
+
+        info.innerText = "Kurs: 1 € = " + kurs.toFixed(4) + " TL (Quelle: open.er-api.com)";
+      } catch (err) {
+        ergebnis.innerText = "❌ Fehler beim Laden des Wechselkurses.";
+        info.innerText = "";
+      }
+    }
+
+    function clearOther(field) {
+      if (field === 'tl') {
+        document.getElementById('tl').value = '';
+      } else {
+        document.getElementById('euro').value = '';
+      }
+      document.getElementById('ergebnis').innerText = "–";
+      document.getElementById('info').innerText = "";
+    }
+  </script>
+</body>
+</html>
